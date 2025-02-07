@@ -1,28 +1,19 @@
-import { Canvas } from "@react-three/fiber";
-import { OrbitControls, useGLTF } from "@react-three/drei";
+import { useGLTF } from "@react-three/drei";
+import { useGameState } from "../state/gameState";
+import { useRef } from "react";
+import { useFrame } from "@react-three/fiber";
 
-export function Model(props) {
-  // Using useGLTF hook to load the model
-  const { nodes, materials } = useGLTF("/path/to/your/model.glb"); // path to your .glb or .gltf file
+export function PlayerToken(props) {
+  const { meeplePosition } = useGameState(); // Get meeple position from game state
+  const { scene } = useGLTF("/assets/PlayerToken/meeple.gltf"); // Load meeple model
+  const meepleRef = useRef();
 
-  return (
-    <mesh
-      {...props}
-      geometry={nodes.mesh_0.geometry}
-      material={materials.material_0}
-    >
-      {/* You can apply materials, textures, or even animations */}
-    </mesh>
-  );
-}
+  // Animate the meeple to move when meeplePosition updates
+  useFrame(() => {
+    if (meepleRef.current) {
+      meepleRef.current.position.set(...meeplePosition);
+    }
+  });
 
-function App() {
-  return (
-    <Canvas>
-      <ambientLight intensity={0.5} />
-      <spotLight position={[10, 10, 10]} intensity={1} />
-      <Model position={[-1.2, 0, 0]} scale={0.5} />
-      <OrbitControls />
-    </Canvas>
-  );
+  return <primitive ref={meepleRef} object={scene} {...props} />;
 }
